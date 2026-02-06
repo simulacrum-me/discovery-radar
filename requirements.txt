@@ -1,0 +1,8 @@
+mcp[cli]
+whisperx @ git+https://github.com/m-bain/whisperX.git
+torch
+torchaudio
+ffmpeg-python
+speechbrain
+scikit-learn
+numpy
