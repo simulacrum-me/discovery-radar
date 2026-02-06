@@ -1,4 +1,5 @@
 import os
+import subprocess
 import logging
 from mcp.server.fastmcp import FastMCP
 
@@ -213,6 +214,58 @@ def transcribe_video(
     transcript = "\n".join(lines)
     logger.info("Transcription complete: %d segments", len(lines))
     return transcript
+
+
+@mcp.tool()
+def download_video(
+    url: str,
+    output_dir: str | None = None,
+    filename: str | None = None,
+) -> str:
+    """Download a video from YouTube (or other supported sites) as MP4 using yt-dlp.
+
+    Returns the absolute path to the downloaded file.
+
+    Args:
+        url: YouTube URL or any yt-dlp supported URL.
+        output_dir: Directory to save the file. Defaults to current working directory.
+        filename: Output filename without extension. Defaults to the video title.
+    """
+    output_dir = output_dir or os.getcwd()
+    if not os.path.isdir(output_dir):
+        return f"Error: output directory not found: {output_dir}"
+
+    if filename:
+        output_template = os.path.join(output_dir, f"{filename}.%(ext)s")
+    else:
+        output_template = os.path.join(output_dir, "%(title)s.%(ext)s")
+
+    cmd = [
+        "yt-dlp",
+        "-f", "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
+        "--merge-output-format", "mp4",
+        "-o", output_template,
+        "--print", "after_move:filepath",
+        "--no-simulate",
+        url,
+    ]
+
+    logger.info("Downloading video: %s", url)
+    try:
+        result = subprocess.run(
+            cmd, capture_output=True, text=True, timeout=600
+        )
+    except FileNotFoundError:
+        return "Error: yt-dlp is not installed. Install it with: pip install yt-dlp"
+    except subprocess.TimeoutExpired:
+        return "Error: download timed out after 10 minutes"
+
+    if result.returncode != 0:
+        return f"Error: yt-dlp failed:\n{result.stderr.strip()}"
+
+    file_path = result.stdout.strip().splitlines()[-1]
+    logger.info("Downloaded: %s", file_path)
+    return file_path
 
 
 if __name__ == "__main__":
