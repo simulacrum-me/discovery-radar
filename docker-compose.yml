@@ -1,0 +1,23 @@
+services:
+  transcriber:
+    build: .
+    container_name: discovery-radar
+    stdin_open: true
+    tty: true
+    volumes:
+      # Mount your videos directory (adjust path as needed)
+      - ./videos:/videos
+      # Persist downloaded models between container restarts
+      - model-cache:/app/pretrained_models
+      - huggingface-cache:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+volumes:
+  model-cache:
+  huggingface-cache:
