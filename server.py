@@ -9,7 +9,12 @@ import torch
 # Fix for PyTorch 2.6+ weights_only=True default
 # Allow omegaconf types used by whisperx/pyannote model checkpoints
 from omegaconf import DictConfig, ListConfig, OmegaConf
-torch.serialization.add_safe_globals([DictConfig, ListConfig, OmegaConf])
+from omegaconf.base import ContainerMetadata, Metadata
+from omegaconf.nodes import ValueNode
+torch.serialization.add_safe_globals([
+    DictConfig, ListConfig, OmegaConf,
+    ContainerMetadata, Metadata, ValueNode
+])
 
 import whisperx
 from sklearn.cluster import AgglomerativeClustering
