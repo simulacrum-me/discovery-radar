@@ -4,8 +4,14 @@ import logging
 from mcp.server.fastmcp import FastMCP
 
 import numpy as np
-import whisperx
 import torch
+
+# Fix for PyTorch 2.6+ weights_only=True default
+# Allow omegaconf types used by whisperx/pyannote model checkpoints
+from omegaconf import DictConfig, ListConfig, OmegaConf
+torch.serialization.add_safe_globals([DictConfig, ListConfig, OmegaConf])
+
+import whisperx
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.preprocessing import normalize
 
